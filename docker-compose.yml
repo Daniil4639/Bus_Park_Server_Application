@@ -1,0 +1,12 @@
+# docker-compose -p bus_park_services_package --env-file settings.env up
+
+services:
+  postgres_path_station:
+    image: postgres:latest
+    container_name: paths_stations_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PATHS_STATIONS_DB_NAME}
+    ports:
+      - "${PATHS_STATIONS_DB_PORT}:5432"
