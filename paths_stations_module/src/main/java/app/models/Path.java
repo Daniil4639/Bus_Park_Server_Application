@@ -29,8 +29,16 @@ public class Path implements Serializable {
     private Boolean isDeleted;
 
     public void updateEntity(PathCreateUpdateDto pathDto) {
-        this.number = pathDto.getNumber();
-        this.city = pathDto.getCity();
-        this.distance = pathDto.getDistance();
+        if (pathDto.getNumber() != null) {
+            this.number = pathDto.getNumber();
+        }
+
+        if (pathDto.getCity() != null) {
+            this.city = pathDto.getCity();
+        }
+
+        if (pathDto.getDistance() != null) {
+            this.distance = pathDto.getDistance();
+        }
     }
 }

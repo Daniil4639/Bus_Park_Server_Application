@@ -11,7 +11,6 @@ import app.repositories.PathStationRepository;
 import app.repositories.StationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

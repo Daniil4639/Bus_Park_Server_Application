@@ -38,7 +38,7 @@ COMMENT ON COLUMN paths.distance IS 'Протяженность маршрута
 /* ------------------------ Таблицы соответствия маршрутов и остановок ----------------------- */
 
 CREATE TABLE IF NOT EXISTS paths_stations (
-    id UUID,
+    id UUID DEFAULT gen_random_uuid(),
     path_id UUID NOT NULL,
     station_id UUID NOT NULL,
     time_spent_from_start INT NOT NULL,
