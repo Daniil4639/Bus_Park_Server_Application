@@ -1,6 +1,6 @@
 package app.models;
 
-import app.models.dto.paths.PathCreateUpdateDto;
+import app.models.dto.paths.PathRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +28,7 @@ public class Path implements Serializable {
 
     private Boolean isDeleted;
 
-    public void updateEntity(PathCreateUpdateDto pathDto) {
+    public void updateEntity(PathRequestDto pathDto) {
         if (pathDto.getNumber() != null) {
             this.number = pathDto.getNumber();
         }

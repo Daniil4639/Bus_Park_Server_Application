@@ -34,7 +34,12 @@ public class DriverService {
 
             Driver driver = optionalDriver.orElse(new Driver());
 
-            driver.updateEntity(driverDto);
+            driver.setFullName(driverDto.getFullName());
+            driver.setAge(driverDto.getAge());
+            driver.setPhone(driverDto.getPhone());
+            driver.setEmail(driverDto.getEmail());
+            driver.setLicenseNumber(driverDto.getLicenseNumber());
+            driver.setStatus(driverDto.getStatus());
             return new DriverDto(driverRepository.saveAndFlush(driver));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
@@ -69,7 +74,6 @@ public class DriverService {
         }
         Driver driver = deletableDriver.get();
 
-        driver.setIsDeleted(true);
-        driverRepository.saveAndFlush(driver);
+        driverRepository.deleteById(id);
     }
 }

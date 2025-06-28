@@ -36,7 +36,10 @@ public class BusService {
             Optional<Bus> optionalBus = busRepository.findByNumber(busDto.getNumber());
 
             Bus bus = optionalBus.orElse(new Bus());
-            bus.updateEntity(busDto);
+            bus.setNumber(busDto.getNumber());
+            bus.setSeatsNumber(busDto.getSeatsNumber());
+            bus.setType(busDto.getType());
+            bus.setStatus(busDto.getStatus());
 
             Department department = departmentRepository.findById(busDto.getDepartmentId())
                     .orElseThrow(() ->
@@ -83,7 +86,6 @@ public class BusService {
         }
         Bus bus = deletableBus.get();
 
-        bus.setIsDeleted(true);
-        busRepository.saveAndFlush(bus);
+        busRepository.deleteById(id);
     }
 }

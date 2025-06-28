@@ -12,9 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PathCreateUpdateDto {
-
-    private UUID id;
+public class PathRequestDto {
 
     private String number;
 

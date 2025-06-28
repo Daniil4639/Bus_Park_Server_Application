@@ -23,7 +23,7 @@ public class Bus {
 
     private UUID pathId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     private Department department;
 
     private Integer seatsNumber;

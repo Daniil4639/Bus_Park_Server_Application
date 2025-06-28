@@ -1,6 +1,6 @@
 package app.controllers;
 
-import app.models.dto.paths.PathCreateUpdateDto;
+import app.models.dto.paths.PathRequestDto;
 import app.models.dto.paths.PathReadDto;
 import app.models.dto.paths.PathResponseDto;
 import app.services.PathService;
@@ -28,13 +28,13 @@ public class PathController {
     }
 
     @PostMapping
-    public PathResponseDto addPath(@RequestBody PathCreateUpdateDto pathDto) {
+    public PathResponseDto addPath(@RequestBody PathRequestDto pathDto) {
         return service.addPath(pathDto);
     }
 
     @PutMapping
-    public PathResponseDto updatePath(@RequestBody PathCreateUpdateDto pathDto) {
-        return service.updatePath(pathDto);
+    public PathResponseDto updatePath(@RequestParam("path_id") UUID id, @RequestBody PathRequestDto pathDto) {
+        return service.updatePath(id, pathDto);
     }
 
     @DeleteMapping

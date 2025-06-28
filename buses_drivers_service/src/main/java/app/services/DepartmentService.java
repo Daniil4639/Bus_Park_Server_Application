@@ -98,7 +98,6 @@ public class DepartmentService {
             busRepository.deleteById(bus.getId());
         }
 
-        department.setIsDeleted(true);
-        departmentRepository.saveAndFlush(department);
+        departmentRepository.deleteById(id);
     }
 }

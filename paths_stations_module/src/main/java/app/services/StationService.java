@@ -11,6 +11,7 @@ import app.repositories.PathStationRepository;
 import app.repositories.StationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,12 +42,12 @@ public class StationService {
                 return new StationDto(returnedFromSoftDelete.get());
             }
 
-            Station newStation = new Station(
+            Station station = new Station(
                     null, stationDto.getName(),
                     stationDto.getAddress(), false
             );
 
-            return new StationDto(stationRepository.saveAndFlush(newStation));
+            return new StationDto(stationRepository.saveAndFlush(station));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
@@ -98,10 +99,9 @@ public class StationService {
         Station station = deletableStation.get();
 
         for (PathStation pathStation: pathStationRepository.findByStationId(id)) {
-            pathStation.setIsDeleted(true);
+            pathStationRepository.deleteById(pathStation.getId());
         }
 
-        station.setIsDeleted(Boolean.TRUE);
-        stationRepository.saveAndFlush(station);
+        stationRepository.deleteById(id);
     }
 }

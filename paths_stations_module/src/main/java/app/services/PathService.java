@@ -2,10 +2,11 @@ package app.services;
 
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
+import app.kafka.KafkaPathEventService;
 import app.models.Path;
 import app.models.PathStation;
 import app.models.Station;
-import app.models.dto.paths.PathCreateUpdateDto;
+import app.models.dto.paths.PathRequestDto;
 import app.models.dto.paths.PathReadDto;
 import app.models.dto.paths.PathResponseDto;
 import app.repositories.PathRepository;
@@ -25,6 +26,7 @@ public class PathService {
     private final PathRepository pathRepository;
     private final PathStationRepository pathStationRepository;
     private final StationRepository stationRepository;
+    private final KafkaPathEventService pathEventService;
 
     public List<PathResponseDto> readAllPaths() {
         Map<UUID, List<PathStation>> pathToStationsMap = pathStationRepository.findAll().stream()
@@ -55,9 +57,9 @@ public class PathService {
     }
 
     @Transactional
-    public PathResponseDto addPath(PathCreateUpdateDto pathDto) {
+    public PathResponseDto addPath(PathRequestDto pathDto) {
         try {
-            pathRepository.rejectSoftDelete(pathDto.getNumber(), pathDto.getCity());
+            pathRepository.rejectSoftDeleteByNumberAndCity(pathDto.getNumber(), pathDto.getCity());
 
             Path path = createPathOrFindAndUpdate(pathDto);
             List<PathStation> stations = updateStationsInfo(path, pathDto);
@@ -72,14 +74,11 @@ public class PathService {
     }
 
     @Transactional
-    public PathResponseDto updatePath(PathCreateUpdateDto pathDto) {
-        UUID id = pathDto.getId();
-        if (id == null) {
-            throw new IncorrectBodyException("No path id!");
-        }
-
+    public PathResponseDto updatePath(UUID id, PathRequestDto pathDto) {
         try {
             Path path = pathRepository.findById(id).get();
+            String oldNumber = path.getNumber();
+            String oldCity = path.getCity();
 
             path.updateEntity(pathDto);
 
@@ -106,14 +105,15 @@ public class PathService {
         Path path = deletablePath.get();
 
         for (PathStation pathStation: pathStationRepository.findByPathId(pathId)) {
-            pathStation.setIsDeleted(true);
+            pathStationRepository.deleteById(pathStation.getId());
         }
 
-        path.setIsDeleted(true);
-        pathRepository.saveAndFlush(path);
+        pathRepository.deleteById(pathId);
+
+        pathEventService.sendPathDeleteEvent(pathId);
     }
 
-    private Path createPathOrFindAndUpdate(PathCreateUpdateDto pathDto) {
+    private Path createPathOrFindAndUpdate(PathRequestDto pathDto) {
         Path path = pathRepository.findByNumberAndCity(pathDto.getNumber(), pathDto.getCity())
                 .orElse(new Path());
         path.setNumber(path.getNumber());
@@ -124,7 +124,7 @@ public class PathService {
         return path;
     }
 
-    private List<PathStation> updateStationsInfo(Path path, PathCreateUpdateDto pathDto) {
+    private List<PathStation> updateStationsInfo(Path path, PathRequestDto pathDto) {
         if (pathDto.getStations() == null || pathDto.getTimeFromStart() == null) {
             return pathStationRepository.findByPathId(path.getId());
         }
@@ -136,7 +136,7 @@ public class PathService {
         List<PathStation> result = new ArrayList<>();
 
         for (int i = 0; i < pathDto.getStations().size(); i++) {
-            pathStationRepository.rejectSoftDelete(
+            pathStationRepository.rejectSoftDeleteByPathIdAndStationId(
                     path.getId(), pathDto.getStations().get(i)
             );
 
