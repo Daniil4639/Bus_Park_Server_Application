@@ -17,11 +17,11 @@ import java.util.UUID;
 public interface DepartmentRepository extends JpaRepository<Department, UUID> {
 
     @Caching(put = @CachePut(key = "{#result.name, #result.address}"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Department save(Department department);
 
     @Caching(put = @CachePut(key = "{#result.name, #result.address}"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Department saveAndFlush(Department department);
 
     @Override
@@ -33,7 +33,7 @@ public interface DepartmentRepository extends JpaRepository<Department, UUID> {
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.id = ?1")
     Optional<Department> findById(UUID id);
 
-    @Cacheable(key = "{#name, #address}", unless = "#result.isEmpty()")
+    @Cacheable(key = "{#name, #address}")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.name = ?1 and b.address = ?2")
     Optional<Department> findByNameAndAddress(String name, String address);
 

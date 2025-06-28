@@ -1,4 +1,4 @@
-package app.models.dto;
+package app.models.dto.drivers;
 
 import app.models.Driver;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DriverDto {
+public class DriverResponseDto {
 
     private UUID id;
 
@@ -28,7 +28,7 @@ public class DriverDto {
 
     private String status;
 
-    public DriverDto(Driver driver) {
+    public DriverResponseDto(Driver driver) {
         this.id = driver.getId();
         this.fullName = driver.getFullName();
         this.age = driver.getAge();

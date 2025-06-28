@@ -1,11 +1,13 @@
 package app.models;
 
-import app.models.dto.DepartmentDto;
+import app.models.dto.departments.DepartmentRequestDto;
+import app.models.dto.departments.DepartmentResponseDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
@@ -16,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Department {
+public class Department implements Serializable {
 
     @Id
     private UUID id;
@@ -27,7 +29,7 @@ public class Department {
 
     private Boolean isDeleted;
 
-    public void updateEntity(DepartmentDto departmentDto) {
+    public void updateEntity(DepartmentRequestDto departmentDto) {
         if (departmentDto.getName() != null) {
             this.name = departmentDto.getName();
         }

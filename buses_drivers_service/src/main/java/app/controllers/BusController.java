@@ -1,7 +1,7 @@
 package app.controllers;
 
-import app.models.dto.BusCreateUpdateDto;
-import app.models.dto.BusResponseDto;
+import app.models.dto.buses.BusRequestDto;
+import app.models.dto.buses.BusResponseDto;
 import app.services.BusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +21,26 @@ public class BusController {
         return service.readAllBuses();
     }
 
+    @GetMapping("/by_department")
+    public List<BusResponseDto> getAllBusesByDepartment(@RequestParam("name") String name,
+                                                        @RequestParam("address") String address) {
+        return service.readAllBusesByDepartment(name, address);
+    }
+
+    @GetMapping("/by_number")
+    public BusResponseDto getBusByNumber(@RequestParam("number") String number) {
+        return service.readBusByNumber(number);
+    }
+
     @PostMapping
-    public BusResponseDto createBus(@RequestBody BusCreateUpdateDto busDto) {
+    public BusResponseDto createBus(@RequestBody BusRequestDto busDto) {
         return service.addBus(busDto);
     }
 
     @PutMapping
-    public BusResponseDto updateBus(@RequestBody BusCreateUpdateDto busDto) {
-        return service.updateBus(busDto);
+    public BusResponseDto updateBus(@RequestParam("bus_id") UUID id,
+                                    @RequestBody BusRequestDto busDto) {
+        return service.updateBus(id, busDto);
     }
 
     @DeleteMapping

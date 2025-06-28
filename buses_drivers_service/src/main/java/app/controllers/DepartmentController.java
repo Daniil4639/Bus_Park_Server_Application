@@ -1,7 +1,7 @@
 package app.controllers;
 
-import app.models.dto.BusResponseDto;
-import app.models.dto.DepartmentDto;
+import app.models.dto.departments.DepartmentRequestDto;
+import app.models.dto.departments.DepartmentResponseDto;
 import app.services.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,23 +17,19 @@ public class DepartmentController {
     private final DepartmentService service;
 
     @GetMapping
-    public List<DepartmentDto> getAllDepartments() {
+    public List<DepartmentResponseDto> getAllDepartments() {
         return service.readAllDepartments();
     }
 
-    @GetMapping("/buses_by_department")
-    public List<BusResponseDto> getAllBusesByDepartment(@RequestBody DepartmentDto departmentDto) {
-        return service.readAllBusesByDepartment(departmentDto);
-    }
-
     @PostMapping
-    public DepartmentDto addDepartment(@RequestBody DepartmentDto departmentDto) {
+    public DepartmentResponseDto addDepartment(@RequestBody DepartmentRequestDto departmentDto) {
         return service.addDepartment(departmentDto);
     }
 
     @PutMapping
-    public DepartmentDto updateDepartment(@RequestBody DepartmentDto departmentDto) {
-        return service.updateDepartment(departmentDto);
+    public DepartmentResponseDto updateDepartment(@RequestParam("department_id") UUID id,
+                                                  @RequestBody DepartmentRequestDto departmentDto) {
+        return service.updateDepartment(id, departmentDto);
     }
 
     @DeleteMapping

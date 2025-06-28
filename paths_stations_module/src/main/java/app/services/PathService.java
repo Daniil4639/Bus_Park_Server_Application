@@ -6,8 +6,8 @@ import app.kafka.KafkaPathEventService;
 import app.models.Path;
 import app.models.PathStation;
 import app.models.Station;
+import app.models.dto.paths.PathPreviewResponseDto;
 import app.models.dto.paths.PathRequestDto;
-import app.models.dto.paths.PathReadDto;
 import app.models.dto.paths.PathResponseDto;
 import app.repositories.PathRepository;
 import app.repositories.PathStationRepository;
@@ -40,20 +40,47 @@ public class PathService {
                 ).toList();
     }
 
-    public PathResponseDto readPathByNumberAndCity(PathReadDto pathDto) {
+    public PathResponseDto readPathById(UUID id) {
+        Path path = pathRepository.findById(id).orElseThrow(() ->
+                new NoDataException("No path with id: " + id + "!"));
+
+        return new PathResponseDto(
+                path,
+                pathStationRepository.findByPathId(id)
+        );
+    }
+
+    public PathResponseDto readPathByNumberAndCity(String number, String city) {
         Optional<Path> path = pathRepository.findByNumberAndCity(
-                pathDto.getNumber(), pathDto.getCity()
+                number, city
         );
 
         if (path.isEmpty()) {
-            throw new NoDataException("No path with number \"" + pathDto.getNumber()
-                    + "\" and city \"" + pathDto.getCity() + "\"!");
+            throw new NoDataException("No path with number \"" + number
+                    + "\" and city \"" + city + "\"!");
         }
 
         return new PathResponseDto(
                 path.get(),
                 pathStationRepository.findByPathId(path.get().getId())
         );
+    }
+
+    public List<PathPreviewResponseDto> getPathsListByStationInfo(String name, String address) {
+        Optional<Station> station = stationRepository.findByNameAndAddress(
+                name, address
+        );
+
+        if (station.isEmpty()) {
+            throw new NoDataException("No station with name \"" + name
+                    + "\" and address \"" + address + "\"!");
+        }
+
+        UUID stationId = station.get().getId();
+        return pathStationRepository.findByStationId(stationId).stream()
+                .map(PathStation::getPath)
+                .map(PathPreviewResponseDto::new)
+                .toList();
     }
 
     @Transactional

@@ -4,8 +4,8 @@ import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.models.Bus;
 import app.models.Department;
-import app.models.dto.BusResponseDto;
-import app.models.dto.DepartmentDto;
+import app.models.dto.departments.DepartmentRequestDto;
+import app.models.dto.departments.DepartmentResponseDto;
 import app.repositories.BusRepository;
 import app.repositories.DepartmentRepository;
 import jakarta.transaction.Transactional;
@@ -24,25 +24,13 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final BusRepository busRepository;
 
-    public List<DepartmentDto> readAllDepartments() {
+    public List<DepartmentResponseDto> readAllDepartments() {
         return departmentRepository.findAll().stream()
-                .map(DepartmentDto::new)
+                .map(DepartmentResponseDto::new)
                 .toList();
     }
 
-    public List<BusResponseDto> readAllBusesByDepartment(DepartmentDto departmentDto) {
-        Department department = departmentRepository.findByNameAndAddress(
-                departmentDto.getName(), departmentDto.getAddress())
-                .orElseThrow(() -> new NoDataException("No department with name \"" + departmentDto.getName()
-                        + "\" and address \"" + departmentDto.getAddress() + "\"!"
-                ));
-
-        return busRepository.findAllByDepartmentId(department.getId()).stream()
-                .map(BusResponseDto::new)
-                .toList();
-    }
-
-    public DepartmentDto addDepartment(DepartmentDto departmentDto) {
+    public DepartmentResponseDto addDepartment(DepartmentRequestDto departmentDto) {
         try {
             departmentRepository.rejectSoftDelete(departmentDto.getName(),
                     departmentDto.getAddress());
@@ -52,7 +40,7 @@ public class DepartmentService {
             );
 
             if (optionalDepartment.isPresent()) {
-                return new DepartmentDto(optionalDepartment.get());
+                return new DepartmentResponseDto(optionalDepartment.get());
             }
 
             Department department = new Department(
@@ -60,24 +48,19 @@ public class DepartmentService {
                     departmentDto.getAddress(), false
             );
 
-            return new DepartmentDto(departmentRepository.saveAndFlush(department));
+            return new DepartmentResponseDto(departmentRepository.saveAndFlush(department));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
     }
 
-    public DepartmentDto updateDepartment(DepartmentDto departmentDto) {
-        UUID id = departmentDto.getId();
-        if (id == null) {
-            throw new IncorrectBodyException("No department id!");
-        }
-
+    public DepartmentResponseDto updateDepartment(UUID id, DepartmentRequestDto departmentDto) {
         try {
             Department updatableDepartment = departmentRepository.findById(id).get();
 
             updatableDepartment.updateEntity(departmentDto);
 
-            return new DepartmentDto(departmentRepository.saveAndFlush(updatableDepartment));
+            return new DepartmentResponseDto(departmentRepository.saveAndFlush(updatableDepartment));
         } catch (NoSuchElementException ex) {
             throw new NoDataException("No department with id: " + id + "!");
         } catch (Exception ex) {

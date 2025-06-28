@@ -18,13 +18,13 @@ public interface PathRepository extends JpaRepository<Path, UUID> {
 
     @Caching(
             put = @CachePut(key = "{#result.number, #result.city}"),
-            evict = @CacheEvict(key = "'all'")
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true)
     )
     Path save(Path path);
 
     @Caching(
             put = @CachePut(key = "{#result.number, #result.city}"),
-            evict = @CacheEvict(key = "'all'")
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true)
     )
     Path saveAndFlush(Path path);
 
@@ -37,7 +37,7 @@ public interface PathRepository extends JpaRepository<Path, UUID> {
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.id = ?1")
     Optional<Path> findById(UUID id);
 
-    @Cacheable(key = "{#number, #city}", unless = "#result.isEmpty()")
+    @Cacheable(key = "{#number, #city}")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.number = ?1 and b.city = ?2")
     Optional<Path> findByNumberAndCity(String number, String city);
 

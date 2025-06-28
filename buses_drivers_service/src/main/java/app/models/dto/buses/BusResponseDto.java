@@ -1,6 +1,7 @@
-package app.models.dto;
+package app.models.dto.buses;
 
 import app.models.Bus;
+import app.models.dto.departments.DepartmentResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ public class BusResponseDto {
 
     private UUID pathId;
 
-    private DepartmentDto department;
+    private DepartmentResponseDto department;
 
     private Integer seatsNumber;
 
@@ -32,7 +33,7 @@ public class BusResponseDto {
         this.id = bus.getId();
         this.number = bus.getNumber();
         this.pathId = bus.getPathId();
-        this.department = new DepartmentDto(bus.getDepartment());
+        this.department = new DepartmentResponseDto(bus.getDepartment());
         this.seatsNumber = bus.getSeatsNumber();
         this.type = bus.getType();
         this.status = bus.getStatus();

@@ -1,17 +1,21 @@
-package app.models.dto.stations;
+package app.dto.paths;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StationCreateDto {
+public class PathPreviewResponseDto {
 
-    private String name;
+    private UUID id;
 
-    private String address;
+    private String number;
+
+    private String city;
 }

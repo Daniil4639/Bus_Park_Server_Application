@@ -2,7 +2,7 @@ package app.models.dto.paths;
 
 import app.models.Path;
 import app.models.PathStation;
-import app.models.dto.stations.StationDto;
+import app.models.dto.stations.StationResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,11 +24,11 @@ public class PathResponseDto {
 
     private String city;
 
-    private StationDto beginStation;
+    private StationResponseDto beginStation;
 
-    private StationDto endStation;
+    private StationResponseDto endStation;
 
-    private List<StationDto> stations;
+    private List<StationResponseDto> stations;
 
     private Double distance;
 
@@ -39,7 +39,7 @@ public class PathResponseDto {
         this.stations = stations.stream()
                 .sorted(Comparator.comparing(PathStation::getTimeSpentFromStart))
                 .map(PathStation::getStation)
-                .map(StationDto::new)
+                .map(StationResponseDto::new)
                 .toList();
         this.beginStation = this.stations.get(0);
         this.endStation = this.stations.get(this.stations.size() - 1);

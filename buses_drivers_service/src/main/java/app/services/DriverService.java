@@ -3,7 +3,8 @@ package app.services;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.models.Driver;
-import app.models.dto.DriverDto;
+import app.models.dto.drivers.DriverRequestDto;
+import app.models.dto.drivers.DriverResponseDto;
 import app.repositories.DriverRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,19 @@ public class DriverService {
 
     private final DriverRepository driverRepository;
 
-    public List<DriverDto> readAllDrivers() {
+    public List<DriverResponseDto> readAllDrivers() {
         return driverRepository.findAll().stream()
-                .map(DriverDto::new)
+                .map(DriverResponseDto::new)
                 .toList();
     }
 
-    public DriverDto addDriver(DriverDto driverDto) {
+    public DriverResponseDto readDriverByLicenseNumber(String licenseNumber) {
+        return new DriverResponseDto(driverRepository.findByLicenseNumber(licenseNumber).orElseThrow(
+                () -> new NoDataException("No driver with license number: " + licenseNumber + "!")
+        ));
+    }
+
+    public DriverResponseDto addDriver(DriverRequestDto driverDto) {
         try {
             driverRepository.rejectSoftDelete(driverDto.getLicenseNumber());
             Optional<Driver> optionalDriver = driverRepository.findByLicenseNumber(
@@ -40,24 +47,19 @@ public class DriverService {
             driver.setEmail(driverDto.getEmail());
             driver.setLicenseNumber(driverDto.getLicenseNumber());
             driver.setStatus(driverDto.getStatus());
-            return new DriverDto(driverRepository.saveAndFlush(driver));
+            return new DriverResponseDto(driverRepository.saveAndFlush(driver));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
     }
 
-    public DriverDto updateDriver(DriverDto driverDto) {
-        UUID id = driverDto.getId();
-        if (id == null) {
-            throw new IncorrectBodyException("No driver id!");
-        }
-
+    public DriverResponseDto updateDriver(UUID id, DriverRequestDto driverDto) {
         try {
             Driver updatableDriver = driverRepository.findById(id).get();
 
             updatableDriver.updateEntity(driverDto);
 
-            return new DriverDto(driverRepository.saveAndFlush(updatableDriver));
+            return new DriverResponseDto(driverRepository.saveAndFlush(updatableDriver));
         } catch (NoSuchElementException ex) {
             throw new NoDataException("No driver with id: " + id + "!");
         } catch (Exception ex) {

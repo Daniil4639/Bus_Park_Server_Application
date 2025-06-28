@@ -1,5 +1,6 @@
-package app.models.dto;
+package app.dto.buses;
 
+import app.dto.departments.DepartmentResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BusCreateUpdateDto {
+public class BusResponseDto {
 
     private UUID id;
 
@@ -19,7 +20,7 @@ public class BusCreateUpdateDto {
 
     private UUID pathId;
 
-    private UUID departmentId;
+    private DepartmentResponseDto department;
 
     private Integer seatsNumber;
 

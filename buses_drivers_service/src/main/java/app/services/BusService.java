@@ -4,8 +4,9 @@ import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.models.Bus;
 import app.models.Department;
-import app.models.dto.BusCreateUpdateDto;
-import app.models.dto.BusResponseDto;
+import app.models.dto.buses.BusRequestDto;
+import app.models.dto.buses.BusResponseDto;
+import app.models.dto.departments.DepartmentRequestDto;
 import app.repositories.BusRepository;
 import app.repositories.DepartmentRepository;
 import jakarta.transaction.Transactional;
@@ -30,7 +31,25 @@ public class BusService {
                 .toList();
     }
 
-    public BusResponseDto addBus(BusCreateUpdateDto busDto) {
+    public BusResponseDto readBusByNumber(String number) {
+        return new BusResponseDto(busRepository.findByNumber(number).orElseThrow(() ->
+                new NoDataException("No bus with number: " + number + "!")
+        ));
+    }
+
+    public List<BusResponseDto> readAllBusesByDepartment(String name, String address) {
+        Department department = departmentRepository.findByNameAndAddress(
+                        name, address)
+                .orElseThrow(() -> new NoDataException("No department with name \"" + name
+                        + "\" and address \"" + address + "\"!"
+                ));
+
+        return busRepository.findAllByDepartmentId(department.getId()).stream()
+                .map(BusResponseDto::new)
+                .toList();
+    }
+
+    public BusResponseDto addBus(BusRequestDto busDto) {
         try {
             busRepository.rejectSoftDelete(busDto.getNumber());
             Optional<Bus> optionalBus = busRepository.findByNumber(busDto.getNumber());
@@ -52,12 +71,7 @@ public class BusService {
         }
     }
 
-    public BusResponseDto updateBus(BusCreateUpdateDto busDto) {
-        UUID id = busDto.getId();
-        if (id == null) {
-            throw new IncorrectBodyException("No bus id!");
-        }
-
+    public BusResponseDto updateBus(UUID id, BusRequestDto busDto) {
         try {
             Bus updatableBus = busRepository.findById(id).get();
 

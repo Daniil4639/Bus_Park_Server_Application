@@ -17,11 +17,11 @@ import java.util.UUID;
 public interface DriverRepository extends JpaRepository<Driver, UUID> {
 
     @Caching(put = @CachePut(key = "#result.licenseNumber"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Driver save(Driver driver);
 
     @Caching(put = @CachePut(key = "#result.licenseNumber"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Driver saveAndFlush(Driver driver);
 
     @Override
@@ -33,7 +33,7 @@ public interface DriverRepository extends JpaRepository<Driver, UUID> {
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.id = ?1")
     Optional<Driver> findById(UUID id);
 
-    @Cacheable(key = "'#licenseNumber'", unless = "#result.isEmpty()")
+    @Cacheable(key = "#licenseNumber")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.licenseNumber = ?1")
     Optional<Driver> findByLicenseNumber(String licenseNumber);
 

@@ -1,6 +1,7 @@
 package app.models;
 
-import app.models.dto.stations.StationDto;
+import app.models.dto.stations.StationRequestDto;
+import app.models.dto.stations.StationResponseDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -28,7 +29,7 @@ public class Station implements Serializable {
 
     private Boolean isDeleted;
 
-    public void updateEntity(StationDto stationDto) {
+    public void updateEntity(StationRequestDto stationDto) {
         if (stationDto.getName() != null) {
             this.name = stationDto.getName();
         }

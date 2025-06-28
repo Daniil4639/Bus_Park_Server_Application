@@ -1,6 +1,7 @@
 package app.controllers;
 
-import app.models.dto.DriverDto;
+import app.models.dto.drivers.DriverRequestDto;
+import app.models.dto.drivers.DriverResponseDto;
 import app.services.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +17,24 @@ public class DriverController {
     private final DriverService service;
 
     @GetMapping
-    public List<DriverDto> readAllDrivers() {
+    public List<DriverResponseDto> readAllDrivers() {
         return service.readAllDrivers();
     }
 
+    @GetMapping("/by_license")
+    public DriverResponseDto readDriverByLicenseNumber(@RequestParam("licenseNumber") String licenseNumber) {
+        return service.readDriverByLicenseNumber(licenseNumber);
+    }
+
     @PostMapping
-    public DriverDto addDriver(@RequestBody DriverDto driverDto) {
+    public DriverResponseDto addDriver(@RequestBody DriverRequestDto driverDto) {
         return service.addDriver(driverDto);
     }
 
     @PutMapping
-    public DriverDto updateDriver(@RequestBody DriverDto driverDto) {
-        return service.updateDriver(driverDto);
+    public DriverResponseDto updateDriver(@RequestParam("driver_id") UUID id,
+                                          @RequestBody DriverRequestDto driverDto) {
+        return service.updateDriver(id, driverDto);
     }
 
     @DeleteMapping

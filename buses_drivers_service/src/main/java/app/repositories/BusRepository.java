@@ -17,11 +17,11 @@ import java.util.UUID;
 public interface BusRepository extends JpaRepository<Bus, UUID> {
 
     @Caching(put = @CachePut(key = "#result.number"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Bus save(Bus bus);
 
     @Caching(put = @CachePut(key = "#result.number"),
-            evict = @CacheEvict(key = "'all'"))
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true))
     Bus saveAndFlush(Bus bus);
 
     @Override
@@ -39,7 +39,7 @@ public interface BusRepository extends JpaRepository<Bus, UUID> {
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.id = ?1")
     Optional<Bus> findById(UUID id);
 
-    @Cacheable(key = "#number", unless = "#result.isEmpty()")
+    @Cacheable(key = "#number")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.number = ?1")
     Optional<Bus> findByNumber(String number);
 

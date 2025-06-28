@@ -1,8 +1,7 @@
 package app.controllers;
 
-import app.models.dto.paths.PathPreviewDto;
-import app.models.dto.stations.StationCreateDto;
-import app.models.dto.stations.StationDto;
+import app.models.dto.stations.StationRequestDto;
+import app.models.dto.stations.StationResponseDto;
 import app.services.StationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,23 +17,19 @@ public class StationController {
     private final StationService service;
 
     @GetMapping
-    public List<StationDto> getAllStations() {
+    public List<StationResponseDto> getAllStations() {
         return service.readAllStations();
     }
 
-    @GetMapping("/paths_by_station")
-    public List<PathPreviewDto> getPathsWithCurrentStation(@RequestBody StationDto stationDto) {
-        return service.getPathsListByStationInfo(stationDto);
-    }
-
     @PostMapping
-    public StationDto addStation(@RequestBody StationCreateDto stationDto) {
+    public StationResponseDto addStation(@RequestBody StationRequestDto stationDto) {
         return service.addStation(stationDto);
     }
 
     @PutMapping
-    public StationDto updateStation(@RequestBody StationDto stationDto) {
-        return service.updateStationInfo(stationDto);
+    public StationResponseDto updateStation(@RequestParam("station_id") UUID id,
+                                            @RequestBody StationRequestDto stationDto) {
+        return service.updateStationInfo(id, stationDto);
     }
 
     @DeleteMapping

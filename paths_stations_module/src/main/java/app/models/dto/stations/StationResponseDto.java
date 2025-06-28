@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StationDto {
+public class StationResponseDto {
 
     private UUID id;
 
@@ -20,7 +20,7 @@ public class StationDto {
 
     private String address;
 
-    public StationDto(Station station) {
+    public StationResponseDto(Station station) {
         this.id = station.getId();
         this.name = station.getName();
         this.address = station.getAddress();

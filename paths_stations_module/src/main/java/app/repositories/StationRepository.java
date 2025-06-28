@@ -18,13 +18,13 @@ public interface StationRepository extends JpaRepository<Station, UUID> {
 
     @Caching(
             put = @CachePut(key = "{#result.name, #result.address}"),
-            evict = @CacheEvict(key = "'all'")
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true)
     )
     Station save(Station station);
 
     @Caching(
             put = @CachePut(key = "{#result.name, #result.address}"),
-            evict = @CacheEvict(key = "'all'")
+            evict = @CacheEvict(allEntries = true, beforeInvocation = true)
     )
     Station saveAndFlush(Station station);
 
@@ -37,7 +37,7 @@ public interface StationRepository extends JpaRepository<Station, UUID> {
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.id = ?1")
     Optional<Station> findById(UUID id);
 
-    @Cacheable(key = "{#name, #address}", unless = "#result.isEmpty()")
+    @Cacheable(key = "{#name, #address}")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.name = ?1 and b.address = ?2")
     Optional<Station> findByNameAndAddress(String name, String address);
 

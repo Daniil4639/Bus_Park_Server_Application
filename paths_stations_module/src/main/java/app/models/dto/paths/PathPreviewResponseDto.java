@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PathPreviewDto {
+public class PathPreviewResponseDto {
 
     private UUID id;
 
@@ -20,7 +20,7 @@ public class PathPreviewDto {
 
     private String city;
 
-    public PathPreviewDto(Path path) {
+    public PathPreviewResponseDto(Path path) {
         this.id = path.getId();
         this.number = path.getNumber();
         this.city = path.getCity();

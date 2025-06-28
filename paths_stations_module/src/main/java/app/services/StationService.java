@@ -4,14 +4,12 @@ import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.models.PathStation;
 import app.models.Station;
-import app.models.dto.paths.PathPreviewDto;
-import app.models.dto.stations.StationCreateDto;
-import app.models.dto.stations.StationDto;
+import app.models.dto.stations.StationRequestDto;
+import app.models.dto.stations.StationResponseDto;
 import app.repositories.PathStationRepository;
 import app.repositories.StationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,14 +21,14 @@ public class StationService {
     private final StationRepository stationRepository;
     private final PathStationRepository pathStationRepository;
 
-    public List<StationDto> readAllStations() {
+    public List<StationResponseDto> readAllStations() {
         return stationRepository.findAll()
                 .stream()
-                .map(StationDto::new)
+                .map(StationResponseDto::new)
                 .toList();
     }
 
-    public StationDto addStation(StationCreateDto stationDto) {
+    public StationResponseDto addStation(StationRequestDto stationDto) {
         try {
             stationRepository.rejectSoftDelete(
                     stationDto.getName(), stationDto.getAddress()
@@ -39,7 +37,7 @@ public class StationService {
                     stationDto.getName(), stationDto.getAddress());
 
             if (returnedFromSoftDelete.isPresent()) {
-                return new StationDto(returnedFromSoftDelete.get());
+                return new StationResponseDto(returnedFromSoftDelete.get());
             }
 
             Station station = new Station(
@@ -47,46 +45,24 @@ public class StationService {
                     stationDto.getAddress(), false
             );
 
-            return new StationDto(stationRepository.saveAndFlush(station));
+            return new StationResponseDto(stationRepository.saveAndFlush(station));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
     }
 
-    public StationDto updateStationInfo(StationDto stationDto) {
-        UUID id = stationDto.getId();
-        if (id == null) {
-            throw new IncorrectBodyException("No station id!");
-        }
-
+    public StationResponseDto updateStationInfo(UUID id, StationRequestDto stationDto) {
         try {
             Station updatableStation = stationRepository.findById(id).get();
 
             updatableStation.updateEntity(stationDto);
 
-            return new StationDto(stationRepository.saveAndFlush(updatableStation));
+            return new StationResponseDto(stationRepository.saveAndFlush(updatableStation));
         } catch (NoSuchElementException ex) {
             throw new NoDataException("No station with id: " + id + "!");
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
-    }
-
-    public List<PathPreviewDto> getPathsListByStationInfo(StationDto stationDto) {
-        Optional<Station> station = stationRepository.findByNameAndAddress(
-                stationDto.getName(), stationDto.getAddress()
-        );
-
-        if (station.isEmpty()) {
-            throw new NoDataException("No station with name \"" + stationDto.getName()
-                    + "\" and address \"" + stationDto.getAddress() + "\"!");
-        }
-
-        UUID stationId = station.get().getId();
-        return pathStationRepository.findByStationId(stationId).stream()
-                .map(PathStation::getPath)
-                .map(PathPreviewDto::new)
-                .toList();
     }
 
     @Transactional

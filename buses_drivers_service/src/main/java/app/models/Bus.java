@@ -1,9 +1,10 @@
 package app.models;
 
-import app.models.dto.BusCreateUpdateDto;
+import app.models.dto.buses.BusRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
@@ -14,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Bus {
+public class Bus implements Serializable {
 
     @Id
     private UUID id;
@@ -34,7 +35,7 @@ public class Bus {
 
     private Boolean isDeleted;
 
-    public void updateEntity(BusCreateUpdateDto dto) {
+    public void updateEntity(BusRequestDto dto) {
         if (dto.getNumber() != null) {
             this.number = dto.getNumber();
         }

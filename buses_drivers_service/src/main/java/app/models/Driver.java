@@ -1,11 +1,12 @@
 package app.models;
 
-import app.models.dto.DriverDto;
+import app.models.dto.drivers.DriverRequestDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Driver {
+public class Driver implements Serializable {
 
     @Id
     private UUID id;
@@ -35,7 +36,7 @@ public class Driver {
 
     private Boolean isDeleted;
 
-    public void updateEntity(DriverDto driverDto) {
+    public void updateEntity(DriverRequestDto driverDto) {
         if (driverDto.getFullName() != null) {
             this.fullName = driverDto.getFullName();
         }

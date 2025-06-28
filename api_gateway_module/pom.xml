@@ -12,5 +12,10 @@
     <name>api_gateway_module</name>
     <url>http://maven.apache.org</url>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+    </dependencies>
 </project>

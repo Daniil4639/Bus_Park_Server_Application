@@ -1,7 +1,7 @@
 package app.controllers;
 
+import app.models.dto.paths.PathPreviewResponseDto;
 import app.models.dto.paths.PathRequestDto;
-import app.models.dto.paths.PathReadDto;
 import app.models.dto.paths.PathResponseDto;
 import app.services.PathService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,20 @@ public class PathController {
     }
 
     @GetMapping("/path")
-    public PathResponseDto getPath(@RequestBody PathReadDto pathDto) {
-        return service.readPathByNumberAndCity(pathDto);
+    public PathResponseDto getPath(@RequestParam("number") String number,
+                                   @RequestParam("city") String city) {
+        return service.readPathByNumberAndCity(number, city);
+    }
+
+    @GetMapping("/by_station")
+    public List<PathPreviewResponseDto> getPathsWithCurrentStation(@RequestParam("name") String name,
+                                                                   @RequestParam("address") String address) {
+        return service.getPathsListByStationInfo(name, address);
+    }
+
+    @GetMapping("/by_id")
+    public PathResponseDto getPathById(@RequestParam("path_id") UUID id) {
+        return service.readPathById(id);
     }
 
     @PostMapping
@@ -33,12 +45,13 @@ public class PathController {
     }
 
     @PutMapping
-    public PathResponseDto updatePath(@RequestParam("path_id") UUID id, @RequestBody PathRequestDto pathDto) {
+    public PathResponseDto updatePath(@RequestParam("path_id") UUID id,
+                                      @RequestBody PathRequestDto pathDto) {
         return service.updatePath(id, pathDto);
     }
 
     @DeleteMapping
-    public void deletePath(@RequestParam("path_id")UUID pathId) {
+    public void deletePath(@RequestParam("path_id") UUID pathId) {
         service.deletePath(pathId);
     }
 }
