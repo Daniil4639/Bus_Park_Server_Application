@@ -2,6 +2,7 @@ package app.controllers;
 
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,6 +21,12 @@ public class ControllersAdvice {
     @ExceptionHandler(IncorrectBodyException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<String> handleNoData(IncorrectBodyException ex) {
+        return Mono.just(ex.getMessage());
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public Mono<String> handleTooManyRequests(RequestNotPermitted ex) {
         return Mono.just(ex.getMessage());
     }
 }

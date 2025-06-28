@@ -4,6 +4,8 @@ import app.dto.departments.DepartmentRequestDto;
 import app.dto.departments.DepartmentResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,6 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DepartmentsController {
 
+    private final RateLimiterRegistry registry;
+
     private final WebClient busesDriversServiceClient;
 
     private final static String DEPARTMENTS_URI = "/api/v1/departments";
@@ -29,6 +33,7 @@ public class DepartmentsController {
                 .uri(DEPARTMENTS_URI)
                 .retrieve()
                 .bodyToFlux(DepartmentResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")))
                 .collectList();
     }
 
@@ -38,7 +43,8 @@ public class DepartmentsController {
                 .uri(DEPARTMENTS_URI)
                 .body(departmentDto, DepartmentRequestDto.class)
                 .retrieve()
-                .bodyToMono(DepartmentResponseDto.class);
+                .bodyToMono(DepartmentResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")));
     }
 
     @PutMapping
@@ -51,7 +57,8 @@ public class DepartmentsController {
                         .build())
                 .body(departmentDto, DepartmentRequestDto.class)
                 .retrieve()
-                .bodyToMono(DepartmentResponseDto.class);
+                .bodyToMono(DepartmentResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")));
     }
 
     @DeleteMapping
@@ -62,6 +69,7 @@ public class DepartmentsController {
                         .queryParam("department_id", id)
                         .build())
                 .retrieve()
-                .bodyToMono(Void.class);
+                .bodyToMono(Void.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")));
     }
 }

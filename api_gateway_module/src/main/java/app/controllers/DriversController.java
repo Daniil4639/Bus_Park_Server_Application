@@ -5,9 +5,10 @@ import app.dto.drivers.DriverResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,6 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DriversController {
 
+    private final RateLimiterRegistry registry;
+
     private final WebClient busesDriversServiceClient;
 
     private final static String DRIVERS_URI = "/api/v1/drivers";
@@ -30,6 +33,7 @@ public class DriversController {
                 .uri(DRIVERS_URI)
                 .retrieve()
                 .bodyToFlux(DriverResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")))
                 .collectList();
     }
 
@@ -48,7 +52,8 @@ public class DriversController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(DriverResponseDto.class);
+                .bodyToMono(DriverResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 
     @PostMapping
@@ -64,7 +69,8 @@ public class DriversController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(DriverResponseDto.class);
+                .bodyToMono(DriverResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 
     @PutMapping
@@ -91,7 +97,8 @@ public class DriversController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(DriverResponseDto.class);
+                .bodyToMono(DriverResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 
     @DeleteMapping
@@ -109,6 +116,7 @@ public class DriversController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(Void.class);
+                .bodyToMono(Void.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 }

@@ -6,6 +6,8 @@ import app.dto.paths.PathResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PathsController {
 
+    private final RateLimiterRegistry registry;
+
     private final WebClient pathsStationsServiceClient;
 
     private final static String PATHS_URI = "/api/v1/paths";
@@ -30,6 +34,7 @@ public class PathsController {
                 .uri(PATHS_URI)
                 .retrieve()
                 .bodyToFlux(PathResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .collectList();
     }
 
@@ -50,7 +55,8 @@ public class PathsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(PathResponseDto.class);
+                .bodyToMono(PathResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 
     @GetMapping("/by_station")
@@ -71,6 +77,7 @@ public class PathsController {
                                 )))
                 )
                 .bodyToFlux(PathPreviewResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .collectList();
     }
 
@@ -94,7 +101,8 @@ public class PathsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(PathResponseDto.class);
+                .bodyToMono(PathResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 
     @PutMapping
@@ -121,7 +129,8 @@ public class PathsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(PathResponseDto.class);
+                .bodyToMono(PathResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 
     @DeleteMapping
@@ -139,6 +148,7 @@ public class PathsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(Void.class);
+                .bodyToMono(Void.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 }

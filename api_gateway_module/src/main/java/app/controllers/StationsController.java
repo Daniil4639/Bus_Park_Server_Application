@@ -5,6 +5,8 @@ import app.dto.stations.StationResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StationsController {
 
+    private final RateLimiterRegistry registry;
+
     private final WebClient pathsStationsServiceClient;
 
     private final static String STATIONS_URI = "/api/v1/stations";
@@ -29,6 +33,7 @@ public class StationsController {
                 .uri(STATIONS_URI)
                 .retrieve()
                 .bodyToFlux(StationResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")))
                 .collectList();
     }
 
@@ -45,7 +50,8 @@ public class StationsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(StationResponseDto.class);
+                .bodyToMono(StationResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")));
     }
 
     @PutMapping
@@ -72,7 +78,8 @@ public class StationsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(StationResponseDto.class);
+                .bodyToMono(StationResponseDto.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")));
     }
 
     @DeleteMapping
@@ -90,6 +97,7 @@ public class StationsController {
                                         errorBody.getMessage()
                                 )))
                 )
-                .bodyToMono(Void.class);
+                .bodyToMono(Void.class)
+                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")));
     }
 }
