@@ -2,6 +2,7 @@ package app.dto.buses;
 
 import app.dto.departments.DepartmentResponseDto;
 import app.dto.paths.PathResponseDto;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusResponseWithPathDto {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID id;
 
     private String number;

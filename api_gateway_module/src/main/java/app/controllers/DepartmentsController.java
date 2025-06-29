@@ -4,6 +4,7 @@ import app.dto.departments.DepartmentRequestDto;
 import app.dto.departments.DepartmentResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
+import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,8 @@ public class DepartmentsController {
 
     private final WebClient busesDriversServiceClient;
 
+    private final UserRoleValidationService roleValidationService;
+
     private final static String DEPARTMENTS_URI = "/api/v1/departments";
 
     @GetMapping
@@ -34,6 +37,7 @@ public class DepartmentsController {
                 .retrieve()
                 .bodyToFlux(DepartmentResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")))
+                .map(roleValidationService::clearDepartment)
                 .collectList();
     }
 
@@ -44,6 +48,7 @@ public class DepartmentsController {
                 .body(departmentDto, DepartmentRequestDto.class)
                 .retrieve()
                 .bodyToMono(DepartmentResponseDto.class)
+                .map(roleValidationService::clearDepartment)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")));
     }
 
@@ -58,6 +63,7 @@ public class DepartmentsController {
                 .body(departmentDto, DepartmentRequestDto.class)
                 .retrieve()
                 .bodyToMono(DepartmentResponseDto.class)
+                .map(roleValidationService::clearDepartment)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("departmentsService")));
     }
 

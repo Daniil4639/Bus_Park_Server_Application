@@ -6,6 +6,7 @@ import app.dto.paths.PathResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,8 @@ public class PathsController {
 
     private final WebClient pathsStationsServiceClient;
 
+    private final UserRoleValidationService roleValidationService;
+
     private final static String PATHS_URI = "/api/v1/paths";
 
     @GetMapping
@@ -35,6 +38,7 @@ public class PathsController {
                 .retrieve()
                 .bodyToFlux(PathResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
+                .map(roleValidationService::clearPath)
                 .collectList();
     }
 
@@ -56,6 +60,7 @@ public class PathsController {
                                 )))
                 )
                 .bodyToMono(PathResponseDto.class)
+                .map(roleValidationService::clearPath)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 
@@ -78,6 +83,7 @@ public class PathsController {
                 )
                 .bodyToFlux(PathPreviewResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
+                .map(roleValidationService::clearPathPreview)
                 .collectList();
     }
 
@@ -102,6 +108,7 @@ public class PathsController {
                                 )))
                 )
                 .bodyToMono(PathResponseDto.class)
+                .map(roleValidationService::clearPath)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 
@@ -130,6 +137,7 @@ public class PathsController {
                                 )))
                 )
                 .bodyToMono(PathResponseDto.class)
+                .map(roleValidationService::clearPath)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
     }
 

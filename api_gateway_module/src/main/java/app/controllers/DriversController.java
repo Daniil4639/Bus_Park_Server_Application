@@ -5,6 +5,7 @@ import app.dto.drivers.DriverResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,8 @@ public class DriversController {
 
     private final WebClient busesDriversServiceClient;
 
+    private final UserRoleValidationService roleValidationService;
+
     private final static String DRIVERS_URI = "/api/v1/drivers";
 
     @GetMapping
@@ -34,6 +37,7 @@ public class DriversController {
                 .retrieve()
                 .bodyToFlux(DriverResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")))
+                .map(roleValidationService::clearDriver)
                 .collectList();
     }
 
@@ -53,6 +57,7 @@ public class DriversController {
                                 )))
                 )
                 .bodyToMono(DriverResponseDto.class)
+                .map(roleValidationService::clearDriver)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 
@@ -70,6 +75,7 @@ public class DriversController {
                                 )))
                 )
                 .bodyToMono(DriverResponseDto.class)
+                .map(roleValidationService::clearDriver)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 
@@ -98,6 +104,7 @@ public class DriversController {
                                 )))
                 )
                 .bodyToMono(DriverResponseDto.class)
+                .map(roleValidationService::clearDriver)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
     }
 

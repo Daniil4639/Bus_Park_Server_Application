@@ -5,6 +5,7 @@ import app.dto.stations.StationResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,8 @@ public class StationsController {
 
     private final WebClient pathsStationsServiceClient;
 
+    private final UserRoleValidationService roleValidationService;
+
     private final static String STATIONS_URI = "/api/v1/stations";
 
     @GetMapping
@@ -34,6 +37,7 @@ public class StationsController {
                 .retrieve()
                 .bodyToFlux(StationResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")))
+                .map(roleValidationService::clearStation)
                 .collectList();
     }
 
@@ -51,6 +55,7 @@ public class StationsController {
                                 )))
                 )
                 .bodyToMono(StationResponseDto.class)
+                .map(roleValidationService::clearStation)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")));
     }
 
@@ -79,6 +84,7 @@ public class StationsController {
                                 )))
                 )
                 .bodyToMono(StationResponseDto.class)
+                .map(roleValidationService::clearStation)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("stationsService")));
     }
 

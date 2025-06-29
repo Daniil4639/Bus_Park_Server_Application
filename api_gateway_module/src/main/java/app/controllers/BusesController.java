@@ -7,6 +7,7 @@ import app.dto.paths.PathResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.exceptions.ServiceErrorResponse;
+import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class BusesController {
 
     private final WebClient busesDriversServiceClient;
     private final WebClient pathsStationsServiceClient;
+    private final UserRoleValidationService roleValidationService;
 
     private final static String BUSES_URI = "/api/v1/buses";
     private final static String PATHS_URI = "/api/v1/paths";
@@ -39,6 +41,7 @@ public class BusesController {
                 .bodyToFlux(BusResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .flatMap(this::getBusWithPath)
+                .map(roleValidationService::clearBus)
                 .collectList();
     }
 
@@ -62,6 +65,7 @@ public class BusesController {
                 .bodyToFlux(BusResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .flatMap(this::getBusWithPath)
+                .map(roleValidationService::clearBus)
                 .collectList();
     }
 
@@ -82,7 +86,8 @@ public class BusesController {
                 )
                 .bodyToMono(BusResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
-                .flatMap(this::getBusWithPath);
+                .flatMap(this::getBusWithPath)
+                .map(roleValidationService::clearBus);
     }
 
     @PostMapping
@@ -107,7 +112,8 @@ public class BusesController {
                 )
                 .bodyToMono(BusResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
-                .flatMap(this::getBusWithPath);
+                .flatMap(this::getBusWithPath)
+                .map(roleValidationService::clearBus);
     }
 
     @PutMapping
@@ -136,7 +142,8 @@ public class BusesController {
                 )
                 .bodyToMono(BusResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
-                .flatMap(this::getBusWithPath);
+                .flatMap(this::getBusWithPath)
+                .map(roleValidationService::clearBus);
     }
 
     @DeleteMapping
@@ -173,6 +180,7 @@ public class BusesController {
                                 )))
                 )
                 .bodyToMono(PathResponseDto.class)
+                .map(roleValidationService::clearPath)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("pathsService")))
                 .map(pathDto -> new BusResponseWithPathDto(busDto, pathDto));
     }

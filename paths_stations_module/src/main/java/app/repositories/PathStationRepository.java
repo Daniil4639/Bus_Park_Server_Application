@@ -29,11 +29,11 @@ public interface PathStationRepository extends JpaRepository<PathStation, UUID> 
     @Query("select b from #{#entityName} b where b.isDeleted = false")
     List<PathStation> findAll();
 
-    @Cacheable(key = "{paths, #stationId}")
+    @Cacheable(key = "{'paths', #stationId}")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.station.id = ?1")
     List<PathStation> findByStationId(UUID stationId);
 
-    @Cacheable(key = "{stations, #pathId}")
+    @Cacheable(key = "{'stations', #pathId}")
     @Query("select b from #{#entityName} b where b.isDeleted = false and b.path.id = ?1")
     List<PathStation> findByPathId(UUID pathId);
 
