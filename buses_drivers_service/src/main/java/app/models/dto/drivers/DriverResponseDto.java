@@ -16,6 +16,8 @@ public class DriverResponseDto {
 
     private UUID id;
 
+    private String schedule;
+
     private String fullName;
 
     private Integer age;
@@ -30,6 +32,7 @@ public class DriverResponseDto {
 
     public DriverResponseDto(Driver driver) {
         this.id = driver.getId();
+        this.schedule = driver.getSchedule();
         this.fullName = driver.getFullName();
         this.age = driver.getAge();
         this.phone = driver.getPhone();

@@ -18,6 +18,7 @@ import java.util.UUID;
 public class Path implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String number;

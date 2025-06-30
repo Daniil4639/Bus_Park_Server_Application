@@ -11,6 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DriverRequestDto {
 
+    private String schedule;
+
     private String fullName;
 
     private Integer age;

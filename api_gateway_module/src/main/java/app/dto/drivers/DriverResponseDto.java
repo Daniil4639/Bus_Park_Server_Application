@@ -17,6 +17,8 @@ public class DriverResponseDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID id;
 
+    private String schedule;
+
     private String fullName;
 
     private Integer age;

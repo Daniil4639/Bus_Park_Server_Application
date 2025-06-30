@@ -2,9 +2,7 @@ package app.models;
 
 import app.models.dto.stations.StationRequestDto;
 import app.models.dto.stations.StationResponseDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -21,6 +19,7 @@ import java.util.UUID;
 public class Station implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;

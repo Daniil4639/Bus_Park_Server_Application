@@ -1,9 +1,7 @@
 package app.models;
 
 import app.models.dto.drivers.DriverRequestDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -20,7 +18,10 @@ import java.util.UUID;
 public class Driver implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    private String schedule;
 
     private String fullName;
 
@@ -37,6 +38,10 @@ public class Driver implements Serializable {
     private Boolean isDeleted;
 
     public void updateEntity(DriverRequestDto driverDto) {
+        if (driverDto.getSchedule() != null) {
+            this.schedule = driverDto.getSchedule();
+        }
+
         if (driverDto.getFullName() != null) {
             this.fullName = driverDto.getFullName();
         }

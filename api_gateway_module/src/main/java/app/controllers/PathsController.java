@@ -5,17 +5,18 @@ import app.dto.paths.PathRequestDto;
 import app.dto.paths.PathResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
-import app.exceptions.ServiceErrorResponse;
 import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,20 +32,26 @@ public class PathsController {
 
     private final static String PATHS_URI = "/api/v1/paths";
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @GetMapping
-    public Mono<List<PathResponseDto>> getAllPaths() {
+    public Mono<ResponseEntity<Object>> getAllPaths() {
         return pathsStationsServiceClient.get()
                 .uri(PATHS_URI)
                 .retrieve()
                 .bodyToFlux(PathResponseDto.class)
                 .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .map(roleValidationService::clearPath)
-                .collectList();
+                .collectList()
+                .flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)));
     }
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @GetMapping("/path")
-    public Mono<PathResponseDto> getPathByNumberAndCity(@RequestParam("number") String number,
-                                                        @RequestParam("city") String city) {
+    public Mono<ResponseEntity<Object>> getPathByNumberAndCity(@RequestParam("number") String number,
+                                                       @RequestParam("city") String city) {
         return pathsStationsServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(PATHS_URI + "/path")
@@ -52,20 +59,26 @@ public class PathsController {
                         .queryParam("city", city)
                         .build())
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
                 .bodyToMono(PathResponseDto.class)
                 .map(roleValidationService::clearPath)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @GetMapping("/by_station")
-    public Mono<List<PathPreviewResponseDto>> getPathsByStation(@RequestParam("name") String name,
+    public Mono<ResponseEntity<Object>> getPathsByStation(@RequestParam("name") String name,
                                                                 @RequestParam("address") String address) {
         return pathsStationsServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -74,46 +87,60 @@ public class PathsController {
                         .queryParam("address", address)
                         .build())
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
                 .bodyToFlux(PathPreviewResponseDto.class)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .map(roleValidationService::clearPathPreview)
-                .collectList();
+                .collectList()
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @PostMapping
-    public Mono<PathResponseDto> addPath(@RequestBody PathRequestDto pathDto) {
+    public Mono<ResponseEntity<Object>> addPath(@RequestBody PathRequestDto pathDto) {
         return pathsStationsServiceClient.post()
                 .uri(PATHS_URI)
                 .body(pathDto, PathRequestDto.class)
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
-                .onStatus(
-                        status -> status == HttpStatus.BAD_REQUEST,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new IncorrectBodyException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.BAD_REQUEST,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new IncorrectBodyException(body)))
                 )
                 .bodyToMono(PathResponseDto.class)
                 .map(roleValidationService::clearPath)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())))
+                .onErrorResume(IncorrectBodyException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @PutMapping
-    public Mono<PathResponseDto> updatePath(@RequestParam("path_id") UUID id,
+    public Mono<ResponseEntity<Object>> updatePath(@RequestParam("path_id") UUID id,
                                             @RequestBody PathRequestDto pathDto) {
         return pathsStationsServiceClient.put()
                 .uri(uriBuilder -> uriBuilder
@@ -122,41 +149,60 @@ public class PathsController {
                         .build())
                 .body(pathDto, PathRequestDto.class)
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
-                .onStatus(
-                        status -> status == HttpStatus.BAD_REQUEST,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new IncorrectBodyException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.BAD_REQUEST,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new IncorrectBodyException(body)))
                 )
                 .bodyToMono(PathResponseDto.class)
                 .map(roleValidationService::clearPath)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())))
+                .onErrorResume(IncorrectBodyException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @DeleteMapping
-    public Mono<Void> deletePath(@RequestParam("path_id") UUID id) {
+    public Mono<ResponseEntity<Object>> deletePath(@RequestParam("path_id") UUID id) {
         return pathsStationsServiceClient.delete()
                 .uri(uriBuilder -> uriBuilder
                         .path(PATHS_URI)
                         .queryParam("path_id", id)
                         .build())
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
                 .bodyToMono(Void.class)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
+    }
+
+    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
+        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("Too many requests to 'Paths' service!"));
     }
 }

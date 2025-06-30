@@ -2,6 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS drivers (
     id UUID DEFAULT gen_random_uuid(),
+    schedule VARCHAR(100) NOT NULL,
     full_name VARCHAR(50) NOT NULL,
     age INTEGER NOT NULL,
     phone VARCHAR(20) NOT NULL,
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS drivers (
 
 COMMENT ON TABLE drivers IS 'Таблица с данными о водителях';
 COMMENT ON COLUMN drivers.id IS 'Идентификатор водителя';
+COMMENT ON COLUMN drivers.schedule IS 'Расписание водителя';
 COMMENT ON COLUMN drivers.full_name IS 'ФИО водителя';
 COMMENT ON COLUMN drivers.age IS 'Возраст водителя';
 COMMENT ON COLUMN drivers.phone IS 'Телефон водителя';

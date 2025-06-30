@@ -6,6 +6,7 @@ import app.dto.drivers.DriverResponseDto;
 import app.dto.paths.PathPreviewResponseDto;
 import app.dto.paths.PathResponseDto;
 import app.dto.stations.StationResponseDto;
+import app.dto.working_logs.WorkingLogResponseDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,14 @@ public class UserRoleValidationService {
         }
 
         return stationDto;
+    }
+
+    public WorkingLogResponseDto clearWorkingLog(WorkingLogResponseDto logDto) {
+        if (isNotAdmin()) {
+            logDto.setId(null);
+        }
+
+        return logDto;
     }
 
     private boolean isNotAdmin() {

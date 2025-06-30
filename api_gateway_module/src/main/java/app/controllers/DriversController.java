@@ -4,12 +4,14 @@ import app.dto.drivers.DriverRequestDto;
 import app.dto.drivers.DriverResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
-import app.exceptions.ServiceErrorResponse;
 import app.services.UserRoleValidationService;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -30,57 +32,74 @@ public class DriversController {
 
     private final static String DRIVERS_URI = "/api/v1/drivers";
 
+    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @GetMapping
-    public Mono<List<DriverResponseDto>> getAllDrivers() {
+    public Mono<ResponseEntity<Object>> getAllDrivers() {
         return busesDriversServiceClient.get()
                 .uri(DRIVERS_URI)
                 .retrieve()
                 .bodyToFlux(DriverResponseDto.class)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")))
                 .map(roleValidationService::clearDriver)
-                .collectList();
+                .collectList()
+                .flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)));
     }
 
+    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @GetMapping("/by_license")
-    public Mono<DriverResponseDto> getDriverByLicense(@RequestParam("licenseNumber") String licenseNumber) {
+    public Mono<ResponseEntity<Object>> getDriverByLicense(@RequestParam("licenseNumber") String licenseNumber) {
         return busesDriversServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(DRIVERS_URI + "/by_license")
                         .queryParam("licenseNumber", licenseNumber)
                         .build())
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
                 .bodyToMono(DriverResponseDto.class)
                 .map(roleValidationService::clearDriver)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @PostMapping
-    public Mono<DriverResponseDto> addDriver(@RequestBody DriverRequestDto driverDto) {
+    public Mono<ResponseEntity<Object>> addDriver(@RequestBody DriverRequestDto driverDto) {
         return busesDriversServiceClient.post()
                 .uri(DRIVERS_URI)
                 .body(driverDto, DriverRequestDto.class)
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.BAD_REQUEST,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new IncorrectBodyException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.BAD_REQUEST,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new IncorrectBodyException(body)))
                 )
                 .bodyToMono(DriverResponseDto.class)
                 .map(roleValidationService::clearDriver)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(IncorrectBodyException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @PutMapping
-    public Mono<DriverResponseDto> updateDriver(@RequestParam("driver_id") UUID id,
+    public Mono<ResponseEntity<Object>> updateDriver(@RequestParam("driver_id") UUID id,
                                                 @RequestBody DriverRequestDto driverDto) {
         return busesDriversServiceClient.put()
                 .uri(uriBuilder -> uriBuilder
@@ -89,41 +108,60 @@ public class DriversController {
                         .build())
                 .body(driverDto, DriverRequestDto.class)
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
-                .onStatus(
-                        status -> status == HttpStatus.BAD_REQUEST,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new IncorrectBodyException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.BAD_REQUEST,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new IncorrectBodyException(body)))
                 )
                 .bodyToMono(DriverResponseDto.class)
                 .map(roleValidationService::clearDriver)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())))
+                .onErrorResume(IncorrectBodyException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
     }
 
+    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
     @DeleteMapping
-    public Mono<Void> deleteDriver(@RequestParam("driver_id") UUID id) {
+    public Mono<ResponseEntity<Object>> deleteDriver(@RequestParam("driver_id") UUID id) {
         return busesDriversServiceClient.delete()
                 .uri(uriBuilder -> uriBuilder
                         .path(DRIVERS_URI)
                         .queryParam("driver_id", id)
                         .build())
                 .retrieve()
-                .onStatus(
-                        status -> status == HttpStatus.NOT_FOUND,
-                        response -> response.bodyToMono(ServiceErrorResponse.class)
-                                .flatMap(errorBody -> Mono.error(new NoDataException(
-                                        errorBody.getMessage()
-                                )))
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(
+                                        new NoDataException(body)))
                 )
                 .bodyToMono(Void.class)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("driversService")));
+                .<ResponseEntity<Object>>flatMap(body -> Mono.just(ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)))
+                .onErrorResume(NoDataException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(ex.getMessage())));
+    }
+
+    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
+        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("Too many requests to 'Drivers' service!"));
     }
 }

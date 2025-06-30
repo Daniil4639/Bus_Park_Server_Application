@@ -20,6 +20,12 @@ public class ClientsConfig {
     @Value("${services.paths_stations.port}")
     private String pathsStationsServicePort;
 
+    @Value("${services.schedule.host}")
+    private String scheduleServiceHost;
+
+    @Value("${services.schedule.port}")
+    private String scheduleServicePort;
+
     @Bean
     public WebClient busesDriversServiceClient() {
         return WebClient.builder()
@@ -31,6 +37,13 @@ public class ClientsConfig {
     public WebClient pathsStationsServiceClient() {
         return WebClient.builder()
                 .baseUrl("http://" + pathsStationsServiceHost + ":" + pathsStationsServicePort)
+                .build();
+    }
+
+    @Bean
+    public WebClient scheduleServiceClient() {
+        return WebClient.builder()
+                .baseUrl("http://" + scheduleServiceHost + ":" + scheduleServicePort)
                 .build();
     }
 }

@@ -4,6 +4,7 @@ import app.security.jwt.JwtFilter;
 import app.security.user_details.BusUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -66,6 +67,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/v3/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/schedule", "/api/schedule/by_license").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
                         .anyRequest().permitAll())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(provider)

@@ -4,11 +4,12 @@ import app.security.user_details.BusUserDetails;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class JwtService {
         return generate(claims, details);
     }
 
-    public String extractUsername(String token) throws SignatureException {
+    public String extractUsername(String token) throws SecurityException {
         return Jwts.parser().setSigningKey(SECRET_KEY).build()
                 .parseClaimsJws(token).getBody().getSubject();
     }

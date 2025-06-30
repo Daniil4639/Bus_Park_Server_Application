@@ -1,4 +1,4 @@
-package app.exceptions;
+package app.dto.users;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,11 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServiceErrorResponse {
+public class BusUserDto {
 
-    private String error;
+    private String username;
 
-    private String message;
-
-    private int status;
+    private String password;
 }

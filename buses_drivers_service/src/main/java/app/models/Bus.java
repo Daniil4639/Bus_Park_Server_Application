@@ -18,6 +18,7 @@ import java.util.UUID;
 public class Bus implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String number;
