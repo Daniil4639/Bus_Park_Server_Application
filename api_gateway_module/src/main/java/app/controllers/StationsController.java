@@ -5,7 +5,6 @@ import app.dto.stations.StationResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.services.UserRoleValidationService;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +20,6 @@ import java.util.UUID;
 @RequestMapping("/api/stations")
 @RequiredArgsConstructor
 public class StationsController {
-
-    private final RateLimiterRegistry registry;
 
     private final WebClient pathsStationsServiceClient;
 

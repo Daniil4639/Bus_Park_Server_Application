@@ -6,9 +6,7 @@ import app.dto.paths.PathResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.services.UserRoleValidationService;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,8 +22,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PathsController {
 
-    private final RateLimiterRegistry registry;
-
     private final WebClient pathsStationsServiceClient;
 
     private final UserRoleValidationService roleValidationService;
@@ -39,7 +35,6 @@ public class PathsController {
                 .uri(PATHS_URI)
                 .retrieve()
                 .bodyToFlux(PathResponseDto.class)
-                .transformDeferred(RateLimiterOperator.of(registry.rateLimiter("busesService")))
                 .map(roleValidationService::clearPath)
                 .collectList()
                 .flatMap(body -> Mono.just(ResponseEntity

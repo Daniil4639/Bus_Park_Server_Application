@@ -8,20 +8,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class ClientsConfig {
 
-    @Value("${services.buses_drivers.host}")
-    private String busesDriversServiceHost;
-
     @Value("${services.buses_drivers.port}")
     private String busesDriversServicePort;
 
-    @Value("${services.paths_stations.host}")
-    private String pathsStationsServiceHost;
-
     @Value("${services.paths_stations.port}")
     private String pathsStationsServicePort;
-
-    @Value("${services.schedule.host}")
-    private String scheduleServiceHost;
 
     @Value("${services.schedule.port}")
     private String scheduleServicePort;
@@ -29,21 +20,21 @@ public class ClientsConfig {
     @Bean
     public WebClient busesDriversServiceClient() {
         return WebClient.builder()
-                .baseUrl("http://" + busesDriversServiceHost + ":" + busesDriversServicePort)
+                .baseUrl("http://host.docker.internal:" + busesDriversServicePort)
                 .build();
     }
 
     @Bean
     public WebClient pathsStationsServiceClient() {
         return WebClient.builder()
-                .baseUrl("http://" + pathsStationsServiceHost + ":" + pathsStationsServicePort)
+                .baseUrl("http://host.docker.internal:" + pathsStationsServicePort)
                 .build();
     }
 
     @Bean
     public WebClient scheduleServiceClient() {
         return WebClient.builder()
-                .baseUrl("http://" + scheduleServiceHost + ":" + scheduleServicePort)
+                .baseUrl("http://host.docker.internal:" + scheduleServicePort)
                 .build();
     }
 }

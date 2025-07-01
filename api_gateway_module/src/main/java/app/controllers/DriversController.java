@@ -5,9 +5,7 @@ import app.dto.drivers.DriverResponseDto;
 import app.exceptions.IncorrectBodyException;
 import app.exceptions.NoDataException;
 import app.services.UserRoleValidationService;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,15 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
 public class DriversController {
-
-    private final RateLimiterRegistry registry;
 
     private final WebClient busesDriversServiceClient;
 

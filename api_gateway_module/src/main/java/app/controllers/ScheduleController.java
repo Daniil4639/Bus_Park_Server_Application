@@ -2,11 +2,8 @@ package app.controllers;
 
 import app.dto.working_logs.WorkingLogResponseDto;
 import app.exceptions.IncorrectBodyException;
-import app.exceptions.NoDataException;
 import app.services.UserRoleValidationService;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,14 +13,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/schedule")
 @RequiredArgsConstructor
 public class ScheduleController {
-
-    private final RateLimiterRegistry registry;
 
     private final WebClient scheduleServiceClient;
 

@@ -9,7 +9,7 @@
   <name>BusParkServerApplication</name>
   <url>http://maven.apache.org</url>
   <modules>
-    <module>buses_drivers_service</module>
+    <module>buses_drivers_module</module>
       <module>paths_stations_module</module>
       <module>api_gateway_module</module>
       <module>schedule_service_module</module>
