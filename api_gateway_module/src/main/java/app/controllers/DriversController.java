@@ -27,7 +27,7 @@ public class DriversController {
 
     private final static String DRIVERS_URI = "/api/v1/drivers";
 
-    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "driversRateLimiter")
     @GetMapping
     public Mono<ResponseEntity<Object>> getAllDrivers() {
         return busesDriversServiceClient.get()
@@ -42,7 +42,7 @@ public class DriversController {
                         .body(body)));
     }
 
-    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "driversRateLimiter")
     @GetMapping("/by_license")
     public Mono<ResponseEntity<Object>> getDriverByLicense(@RequestParam("licenseNumber") String licenseNumber) {
         return busesDriversServiceClient.get()
@@ -68,7 +68,7 @@ public class DriversController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "driversRateLimiter")
     @PostMapping
     public Mono<ResponseEntity<Object>> addDriver(@RequestBody DriverRequestDto driverDto) {
         return busesDriversServiceClient.post()
@@ -92,7 +92,7 @@ public class DriversController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "driversRateLimiter")
     @PutMapping
     public Mono<ResponseEntity<Object>> updateDriver(@RequestParam("driver_id") UUID id,
                                                 @RequestBody DriverRequestDto driverDto) {
@@ -129,7 +129,7 @@ public class DriversController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "driversRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "driversRateLimiter")
     @DeleteMapping
     public Mono<ResponseEntity<Object>> deleteDriver(@RequestParam("driver_id") UUID id) {
         return busesDriversServiceClient.delete()
@@ -152,11 +152,5 @@ public class DriversController {
                         Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .contentType(MediaType.TEXT_PLAIN)
                                 .body(ex.getMessage())));
-    }
-
-    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body("Too many requests to 'Drivers' service!"));
     }
 }

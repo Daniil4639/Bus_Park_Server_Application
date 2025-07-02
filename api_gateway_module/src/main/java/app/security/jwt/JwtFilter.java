@@ -2,78 +2,68 @@ package app.security.jwt;
 
 import app.security.user_details.BusUserService;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class JwtFilter extends OncePerRequestFilter {
+public class JwtFilter implements WebFilter {
 
     private final JwtService jwtService;
 
     private final BusUserService busUserService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = "";
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        return findToken(exchange)
+                .flatMap(token -> {
+                    try {
+                        String username = jwtService.extractUsername(token);
 
-        Cookie[] cookies = request.getCookies();
-        boolean tokenFound = false;
+                        if (!StringUtils.isEmpty(username)) {
+                            UserDetails details = busUserService.loadUserByUsername(username);
 
-        if (cookies != null) {
-            for (Cookie cookie: cookies) {
-                if (cookie.getName().equals("jwtToken")) {
-                    authHeader = cookie.getValue();
-                    tokenFound = true;
-                    break;
-                }
-            }
+                            if (jwtService.isTokenValid(token, details)) {
+                                Authentication auth = new UsernamePasswordAuthenticationToken(
+                                        details.getUsername(), details.getPassword(),
+                                        details.getAuthorities()
+                                );
+
+                                return chain.filter(exchange).contextWrite(
+                                        ReactiveSecurityContextHolder.withAuthentication(auth)
+                                );
+                            }
+                        }
+                    } catch (SignatureException ignored) {}
+
+                    return Mono.empty();
+                })
+                .switchIfEmpty(chain.filter(exchange));
+    }
+
+    private Mono<String> findToken(ServerWebExchange exchange) {
+        String header = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return Mono.just(header.substring(7));
         }
 
-        String headerWithToken = request.getHeader("Authorization");
-
-        if (!tokenFound && headerWithToken != null && headerWithToken.startsWith("Bearer ")) {
-            authHeader = headerWithToken.substring(7);
-            tokenFound = true;
+        HttpCookie cookie = exchange.getRequest().getCookies().getFirst("jwtToken");
+        if (cookie != null) {
+            return Mono.just(cookie.getValue());
         }
 
-        if (!tokenFound) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
-            String username = jwtService.extractUsername(authHeader);
-
-            if (!StringUtils.isEmpty(username)) {
-                UserDetails details = busUserService.loadUserByUsername(username);
-
-                if (jwtService.isTokenValid(authHeader, details)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            details.getUsername(), details.getPassword(),
-                            details.getAuthorities()
-                    );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-        } catch (SignatureException ignored) {}
-
-        filterChain.doFilter(request, response);
+        return Mono.empty();
     }
 }

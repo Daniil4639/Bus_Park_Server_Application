@@ -9,41 +9,25 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder(BCryptPasswordEncoder.BCryptVersion.$2A, 15);
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(BusUserService service, PasswordEncoder encoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(service);
-        authProvider.setPasswordEncoder(encoder);
-        return authProvider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
-        return config.getAuthenticationManager();
     }
 
     public CorsConfigurationSource corsConfigurationSource() {
@@ -59,26 +43,23 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain configFilterChain(HttpSecurity http,
-                                                 AuthenticationProvider provider,
-                                                 JwtFilter filter) throws Exception {
+    public SecurityWebFilterChain configFilterChain(ServerHttpSecurity http,
+                                                    JwtFilter filter) {
 
-        http.csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/v3/**", "/swagger-ui/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/schedule", "/api/schedule/by_license").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-                        .anyRequest().permitAll())
-                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(provider)
-                .formLogin(AbstractHttpConfigurer::disable);
-
-        return http.build();
+                .addFilterAt(filter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .authorizeExchange(exchange -> exchange
+                        .pathMatchers("/v3/**", "/swagger-ui/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/schedule", "/api/schedule/by_license").hasRole("WORKER")
+                        .pathMatchers(HttpMethod.GET, "/api/**").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/login").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        .anyExchange().authenticated())
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .build();
     }
 }

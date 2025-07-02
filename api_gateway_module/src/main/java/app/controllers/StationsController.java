@@ -27,7 +27,7 @@ public class StationsController {
 
     private final static String STATIONS_URI = "/api/v1/stations";
 
-    @RateLimiter(name = "stationsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "stationsRateLimiter")
     @GetMapping
     public Mono<ResponseEntity<Object>> getAllStations() {
         return pathsStationsServiceClient.get()
@@ -42,7 +42,7 @@ public class StationsController {
                         .body(body)));
     }
 
-    @RateLimiter(name = "stationsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "stationsRateLimiter")
     @PostMapping
     public Mono<ResponseEntity<Object>> addStation(@RequestBody StationRequestDto stationDto) {
         return pathsStationsServiceClient.post()
@@ -66,7 +66,7 @@ public class StationsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "stationsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "stationsRateLimiter")
     @PutMapping
     public Mono<ResponseEntity<Object>> updateStation(@RequestParam("station_id") UUID id,
                                                   @RequestBody StationRequestDto stationDto) {
@@ -103,7 +103,7 @@ public class StationsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "stationsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "stationsRateLimiter")
     @DeleteMapping
     public Mono<ResponseEntity<Object>> deleteStation(@RequestParam("station_id") UUID id) {
         return pathsStationsServiceClient.delete()
@@ -126,11 +126,5 @@ public class StationsController {
                         Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .contentType(MediaType.TEXT_PLAIN)
                                 .body(ex.getMessage())));
-    }
-
-    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body("Too many requests to 'Stations' service!"));
     }
 }

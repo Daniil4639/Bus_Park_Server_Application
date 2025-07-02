@@ -28,7 +28,7 @@ public class PathsController {
 
     private final static String PATHS_URI = "/api/v1/paths";
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @GetMapping
     public Mono<ResponseEntity<Object>> getAllPaths() {
         return pathsStationsServiceClient.get()
@@ -43,7 +43,7 @@ public class PathsController {
                         .body(body)));
     }
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @GetMapping("/path")
     public Mono<ResponseEntity<Object>> getPathByNumberAndCity(@RequestParam("number") String number,
                                                        @RequestParam("city") String city) {
@@ -71,7 +71,7 @@ public class PathsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @GetMapping("/by_station")
     public Mono<ResponseEntity<Object>> getPathsByStation(@RequestParam("name") String name,
                                                                 @RequestParam("address") String address) {
@@ -100,7 +100,7 @@ public class PathsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @PostMapping
     public Mono<ResponseEntity<Object>> addPath(@RequestBody PathRequestDto pathDto) {
         return pathsStationsServiceClient.post()
@@ -133,7 +133,7 @@ public class PathsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @PutMapping
     public Mono<ResponseEntity<Object>> updatePath(@RequestParam("path_id") UUID id,
                                             @RequestBody PathRequestDto pathDto) {
@@ -170,7 +170,7 @@ public class PathsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "pathsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "pathsRateLimiter")
     @DeleteMapping
     public Mono<ResponseEntity<Object>> deletePath(@RequestParam("path_id") UUID id) {
         return pathsStationsServiceClient.delete()
@@ -193,11 +193,5 @@ public class PathsController {
                         Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .contentType(MediaType.TEXT_PLAIN)
                                 .body(ex.getMessage())));
-    }
-
-    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body("Too many requests to 'Paths' service!"));
     }
 }

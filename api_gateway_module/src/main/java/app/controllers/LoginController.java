@@ -6,9 +6,6 @@ import app.security.user_details.BusUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LoginController {
 
-    private final AuthenticationManager manager;
-
     private final BusUserService userService;
 
     private final JwtService jwtService;
@@ -30,10 +25,6 @@ public class LoginController {
     @PostMapping
     public ResponseEntity<String> login(@RequestBody BusUserDto userDto) {
         try {
-            Authentication auth = manager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword())
-            );
-
             UserDetails user = userService.loadUserByUsername(userDto.getUsername());
             return ResponseEntity.ok(jwtService.generateToken(user));
         } catch (AuthenticationException ex) {

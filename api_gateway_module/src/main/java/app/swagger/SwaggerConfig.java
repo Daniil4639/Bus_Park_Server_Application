@@ -15,10 +15,10 @@ import org.springframework.context.annotation.Configuration;
                 title = "Bus application API",
                 version = "1.0"
         ),
-        security = {@SecurityRequirement(name = "jwtToken")}
+        security = {@SecurityRequirement(name = "Authorization")}
 )
 @SecuritySchemes({
-        @SecurityScheme(name = "jwtToken", type = SecuritySchemeType.HTTP, scheme = "bearer",
+        @SecurityScheme(name = "Authorization", type = SecuritySchemeType.HTTP, scheme = "bearer",
                 bearerFormat = "JWT", in = SecuritySchemeIn.HEADER)
 })
 public class SwaggerConfig {}

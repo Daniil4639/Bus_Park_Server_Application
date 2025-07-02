@@ -30,7 +30,7 @@ public class BusesController {
     private final static String BUSES_URI = "/api/v1/buses";
     private final static String PATHS_URI = "/api/v1/paths";
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @GetMapping
     public Mono<ResponseEntity<Object>> getAllBuses() {
         return busesDriversServiceClient.get()
@@ -46,7 +46,7 @@ public class BusesController {
                         .body(body)));
     }
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @GetMapping("/by_department")
     public Mono<ResponseEntity<Object>> getBusesByDepartment(@RequestParam("name") String name,
                                                                    @RequestParam("address") String address) {
@@ -76,7 +76,7 @@ public class BusesController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @GetMapping("/by_number")
     public Mono<ResponseEntity<Object>> getBusByNumber(@RequestParam("number") String number) {
         return busesDriversServiceClient.get()
@@ -103,7 +103,7 @@ public class BusesController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @PostMapping
     public Mono<ResponseEntity<Object>> addBus(@RequestBody BusRequestDto busDto) {
         return busesDriversServiceClient.post()
@@ -137,7 +137,7 @@ public class BusesController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @PutMapping
     public Mono<ResponseEntity<Object>> updateBus(@RequestParam("bus_id") UUID id,
                                                   @RequestBody BusRequestDto busDto) {
@@ -175,7 +175,7 @@ public class BusesController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "busesRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "busesRateLimiter")
     @DeleteMapping
     public Mono<ResponseEntity<Object>> deleteBus(@RequestParam("bus_id") UUID id) {
         return busesDriversServiceClient.delete()
@@ -215,11 +215,5 @@ public class BusesController {
                 .bodyToMono(PathResponseDto.class)
                 .map(roleValidationService::clearPath)
                 .map(pathDto -> new BusResponseWithPathDto(busDto, pathDto));
-    }
-
-    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body("Too many requests to 'Buses' service!"));
     }
 }

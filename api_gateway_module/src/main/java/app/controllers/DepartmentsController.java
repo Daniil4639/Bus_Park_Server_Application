@@ -27,7 +27,7 @@ public class DepartmentsController {
 
     private final static String DEPARTMENTS_URI = "/api/v1/departments";
 
-    @RateLimiter(name = "departmentsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "departmentsRateLimiter")
     @GetMapping
     public Mono<ResponseEntity<Object>> getAllDepartments() {
         return busesDriversServiceClient.get()
@@ -42,7 +42,7 @@ public class DepartmentsController {
                         .body(body)));
     }
 
-    @RateLimiter(name = "departmentsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "departmentsRateLimiter")
     @PostMapping
     public Mono<ResponseEntity<Object>> addDepartment(@RequestBody DepartmentRequestDto departmentDto) {
         return busesDriversServiceClient.post()
@@ -66,7 +66,7 @@ public class DepartmentsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "departmentsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "departmentsRateLimiter")
     @PutMapping
     public Mono<ResponseEntity<Object>> updateDepartment(@RequestParam("department_id") UUID id,
                                                         @RequestBody DepartmentRequestDto departmentDto) {
@@ -103,7 +103,7 @@ public class DepartmentsController {
                                 .body(ex.getMessage())));
     }
 
-    @RateLimiter(name = "departmentsRateLimiter", fallbackMethod = "tooManyRequestsMethod")
+    @RateLimiter(name = "departmentsRateLimiter")
     @DeleteMapping
     public Mono<ResponseEntity<Object>> deleteDepartment(@RequestParam("department_id") UUID id) {
         return busesDriversServiceClient.delete()
@@ -126,11 +126,5 @@ public class DepartmentsController {
                         Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .contentType(MediaType.TEXT_PLAIN)
                                 .body(ex.getMessage())));
-    }
-
-    private Mono<ResponseEntity<Object>> tooManyRequestsMethod(Exception ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body("Too many requests to 'Departments' service!"));
     }
 }
