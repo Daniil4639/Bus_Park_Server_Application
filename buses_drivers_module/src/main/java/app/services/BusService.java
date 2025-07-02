@@ -6,7 +6,6 @@ import app.models.Bus;
 import app.models.Department;
 import app.models.dto.buses.BusRequestDto;
 import app.models.dto.buses.BusResponseDto;
-import app.models.dto.departments.DepartmentRequestDto;
 import app.repositories.BusRepository;
 import app.repositories.DepartmentRepository;
 import jakarta.transaction.Transactional;
@@ -55,10 +54,12 @@ public class BusService {
             Optional<Bus> optionalBus = busRepository.findByNumber(busDto.getNumber());
 
             Bus bus = optionalBus.orElse(new Bus());
+            bus.setPathId(busDto.getPathId());
             bus.setNumber(busDto.getNumber());
             bus.setSeatsNumber(busDto.getSeatsNumber());
             bus.setType(busDto.getType());
             bus.setStatus(busDto.getStatus());
+            bus.setIsDeleted(false);
 
             Department department = departmentRepository.findById(busDto.getDepartmentId())
                     .orElseThrow(() ->
@@ -66,6 +67,8 @@ public class BusService {
             bus.setDepartment(department);
 
             return new BusResponseDto(busRepository.saveAndFlush(bus));
+        } catch (NoDataException ex) {
+            throw new NoDataException(ex.getMessage());
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());
         }
@@ -84,6 +87,8 @@ public class BusService {
             }
 
             return new BusResponseDto(busRepository.saveAndFlush(updatableBus));
+        } catch (NoDataException ex) {
+            throw new NoDataException(ex.getMessage());
         } catch (NoSuchElementException ex) {
             throw new NoDataException("No bus with id: " + id + "!");
         } catch (Exception ex) {

@@ -5,35 +5,24 @@ import app.models.dto.DriverScheduleDto;
 import app.repositories.WorkingLogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaEventService {
+public class KafkaProcessService {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final WorkingLogRepository repository;
 
-    private static final Logger LOGGER = Logger.getLogger(KafkaEventService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(KafkaProcessService.class.getName());
 
-    @Value("${spring.kafka.schedule_from_log_topic_name}")
-    private String fromLogTopicName;
-
-    @Transactional
-    @KafkaListener(topics = "#{'${spring.kafka.schedule_from_drivers_topic_name}'}")
-    public void scheduleEventHandler(String message) throws JsonProcessingException {
+    public void createSchedule(String message) throws JsonProcessingException {
         DriverScheduleDto driverDto = objectMapper.readValue(message, DriverScheduleDto.class);
 
         LocalDateTime startTimeForDay = LocalDateTime.now()
@@ -78,9 +67,5 @@ public class KafkaEventService {
         } catch (Exception ex) {
             LOGGER.info("Incorrect schedule format: " + ex);
         }
-    }
-
-    public void sendScheduleRequest() {
-        kafkaTemplate.send(fromLogTopicName, "Request: get drivers with schedule!");
     }
 }

@@ -2,10 +2,7 @@ package app.models.dto.buses;
 
 import app.models.Bus;
 import app.models.dto.departments.DepartmentResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -13,6 +10,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class BusResponseDto {
 
     private UUID id;

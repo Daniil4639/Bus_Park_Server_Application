@@ -35,18 +35,25 @@ public class DriverService {
 
     public DriverResponseDto addDriver(DriverRequestDto driverDto) {
         try {
+            System.out.println(driverDto.getLicenseNumber());
             driverRepository.rejectSoftDelete(driverDto.getLicenseNumber());
             Optional<Driver> optionalDriver = driverRepository.findByLicenseNumber(
                     driverDto.getLicenseNumber());
 
+            System.out.println(optionalDriver.isEmpty());
+
             Driver driver = optionalDriver.orElse(new Driver());
 
+            driver.setSchedule(driverDto.getSchedule());
             driver.setFullName(driverDto.getFullName());
             driver.setAge(driverDto.getAge());
             driver.setPhone(driverDto.getPhone());
             driver.setEmail(driverDto.getEmail());
             driver.setLicenseNumber(driverDto.getLicenseNumber());
             driver.setStatus(driverDto.getStatus());
+            driver.setIsDeleted(false);
+
+            System.out.println(driver.getLicenseNumber());
             return new DriverResponseDto(driverRepository.saveAndFlush(driver));
         } catch (Exception ex) {
             throw new IncorrectBodyException(ex.getMessage());

@@ -72,7 +72,6 @@ public class StationService {
         if (deletableStation.isEmpty()) {
             throw new NoDataException("No station with id: " + id + "!");
         }
-        Station station = deletableStation.get();
 
         for (PathStation pathStation: pathStationRepository.findByStationId(id)) {
             pathStationRepository.deleteById(pathStation.getId());

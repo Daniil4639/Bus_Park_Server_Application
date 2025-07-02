@@ -104,8 +104,6 @@ public class PathService {
     public PathResponseDto updatePath(UUID id, PathRequestDto pathDto) {
         try {
             Path path = pathRepository.findById(id).get();
-            String oldNumber = path.getNumber();
-            String oldCity = path.getCity();
 
             path.updateEntity(pathDto);
 
@@ -129,7 +127,6 @@ public class PathService {
         if (deletablePath.isEmpty()) {
             throw new NoDataException("No path with id: " + pathId + "!");
         }
-        Path path = deletablePath.get();
 
         for (PathStation pathStation: pathStationRepository.findByPathId(pathId)) {
             pathStationRepository.deleteById(pathStation.getId());

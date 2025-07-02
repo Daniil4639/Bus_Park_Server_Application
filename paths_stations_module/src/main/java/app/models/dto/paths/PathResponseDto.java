@@ -3,10 +3,7 @@ package app.models.dto.paths;
 import app.models.Path;
 import app.models.PathStation;
 import app.models.dto.stations.StationResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,6 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class PathResponseDto {
 
     private UUID id;

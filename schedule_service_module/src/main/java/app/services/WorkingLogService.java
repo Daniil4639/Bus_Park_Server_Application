@@ -1,7 +1,7 @@
 package app.services;
 
 import app.models.WorkingLog;
-import app.kafka.KafkaEventService;
+import app.kafka.KafkaEventListener;
 import app.repositories.WorkingLogRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.List;
 public class WorkingLogService {
 
     private final WorkingLogRepository workingLogRepository;
-    private final KafkaEventService eventService;
+    private final KafkaEventListener eventService;
 
     public List<WorkingLog> getAllLogsBetween(LocalDateTime startTime, LocalDateTime endTime) {
         return workingLogRepository.findAllByStartTimeBetween(
